@@ -1,6 +1,4 @@
-<!-- The request wizard itself lives in this page's Footer Code
-     (script.html), not here — kept out of this file to stay under
-     Webflow's ~50,000 character per-slot limit. -->
+/* WIZARD ENGINE: cooking-only request wizard */
 <script>
 (function () {
   "use strict";
@@ -126,9 +124,8 @@
   });
 
 })();
-<!-- OTP SERVICE MODULE — thin client for the "GoodayOn - OTP Public Proxy"
-     n8n workflow. Duplicated verbatim across pages since Webflow can't
-     share code between pages. Do not touch the OTP backend workflows. -->
+/* OTP SERVICE MODULE: thin client for the "GoodayOn - OTP Public Proxy"
+   n8n workflow. Do not touch the OTP backend workflows. */
   (function () {
     "use strict";
 
@@ -219,7 +216,7 @@
       describeSendError: describeSendError,
       describeVerifyError: describeVerifyError,
     };
-  }
+    })();
 
 <!-- WIZARD ENGINE — cooking-only request wizard. Kept out of body.html to
      stay under Webflow's ~50,000 character per-slot limit. -->
@@ -1033,6 +1030,7 @@
     function resetWizard() {
       form.reset();
       if (charCount) charCount.textContent = "0/" + maxChars + " characters used";
+      if (prefCount) prefCount.textContent = "0/500 characters used";
       resetOtpInputs();
       if (otpCountdownTimer) {
         clearInterval(otpCountdownTimer);
@@ -1118,7 +1116,8 @@
         preferredCommunicationChannel: checkedValue("preferredCommunicationChannel"),
         taskDetails: document.getElementById("etlTask").value.trim(),
         numberOfPeople: people === "" ? undefined : Number(people),
-       preferences: document.getElementById("etlPreferences").value.trim(),
+        cuisinePreference: checkedValues("cuisinePreference"),
+        preferences: document.getElementById("etlPreferences").value.trim(),
       };
       return payload;
     }
@@ -1161,4 +1160,241 @@
     });
     renderStep();
   })();
+/* Catering Form Popup */
+(function () {
+  "use strict";
+  var WEBHOOK = "https://goodayon.app.n8n.cloud/webhook/etalem-service-request";
+  var $ = function (id) { return document.getElementById(id); };
+  var qa = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+  var overlay = $("cateringRequest"), form = $("catForm");
+  var otpIn = qa("#catOtpRow .cat-otp");
+  var cur = 1, timer = null, savedY = 0;
+
+  /* ---------- Add a Back button next to every Continue button ---------- */
+  qa("#catForm .cat-step").forEach(function (s) {
+    var next = s.querySelector("[data-cnext]"), box = document.createElement("div");
+    box.className = "etlw-step-actions";
+    if (+s.getAttribute("data-s") > 1) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "etlw-back cat-back"; b.setAttribute("data-cback", "");
+      b.setAttribute("aria-label", "Go back");
+      b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+      box.appendChild(b);
+    }
+    s.insertBefore(box, next);
+    box.appendChild(next);
+  });
+
+  /* ---------- Small helpers ---------- */
+  function val(name) { var e = form.querySelector('input[name="' + name + '"]:checked'); return e ? e.value : ""; }
+  function vals(name) { return qa('#catForm input[name="' + name + '"]:checked').map(function (e) { return e.value; }); }
+  function otpVal() { return otpIn.map(function (i) { return i.value; }).join(""); }
+  function clearOtp() { otpIn.forEach(function (i) { i.value = ""; i.classList.remove("etl-otp-filled"); }); }
+  function phone() { return "+251" + $("catPhone").value.trim(); }
+  // Step order: all 14, but Full Day skips step 5 (session)
+  function seq() {
+    var s = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+    return val("c_period") === "Full Day" ? s.filter(function (x) { return x !== 5; }) : s;
+  }
+  function clr() { qa("#cateringRequest .etl-field-error").forEach(function (e) { e.remove(); }); }
+  function err(msg, el) {
+    clr();
+    var host = el.closest(".etl-form-group,.etlw-option-list,.etlw-otp-row,.etlw-consent-row,.etl-checkbox-group") || el.parentNode;
+    var d = document.createElement("div");
+    d.className = "etl-field-error"; d.textContent = msg;
+    host.appendChild(d);
+    if (host.scrollIntoView) host.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  function bad(msg, id) { return [msg, $(id)]; }
+
+  /* ---------- Validation: returns null when the step is OK ---------- */
+  function check(n) {
+    var d = $("catDate");
+    if (n === 1) {
+      if (!$("catName").value.trim()) return bad("Please enter your full name.", "catName");
+      if (!/^[79][0-9]{8}$/.test($("catPhone").value.trim())) return bad("Enter a valid Ethiopian mobile number: 9 digits starting with 9 or 7.", "catPhone");
+      if (!$("catConsent").checked) return bad("Please agree to the Privacy Policy to continue.", "catConsent");
+    }
+    if (n === 2 && otpVal().length < 6) return bad("Please enter the 6-digit code we sent you.", "catOtpRow");
+    if (n === 3 && (!d.value || d.value < d.min || d.value > d.max)) return bad("Please pick a date within the next 7 days.", "catDate");
+    if (n === 4 && !val("c_period")) return bad("Please choose the suitable time for your catering service.", "catPeriodList");
+    if (n === 5 && !val("c_session")) return bad("Please choose one session.", "catSessions");
+    if (n === 6 && !(parseInt($("catGuests").value, 10) >= 1)) return bad("Enter at least 1 person.", "catGuests");
+    if (n === 7 && !vals("c_incl").length) return bad("Please select at least one option.", "catIncl");
+    if (n === 8 && !vals("c_type").length) return bad("Please select at least one menu type.", "catType");
+    if (n === 9 && !$("catMenu").value.trim()) return bad("Please tell us what you have in mind for the menu.", "catMenu");
+    if (n === 10 && !(parseFloat($("catBudget").value) > 0)) return bad("Enter a budget per person greater than 0.", "catBudget");
+    if (n === 11) {
+      if (!$("catLoc").value.trim()) return bad("Please enter the event area or address.", "catLoc");
+      if (!$("catLandmark").value.trim()) return bad("Please enter a nearby landmark.", "catLandmark");
+    }
+    if (n === 12 && !val("c_channel")) return bad("Please let us know how you found Etalem.", "catChannelList");
+    if (n === 13 && !val("c_comm")) return bad("Please select how you'd like us to reach you.", "catCommList");
+    return null;
+  }
+
+  /* ---------- Enable/disable Continue on steps 1 and 2 ---------- */
+  function sync() {
+    var s = form.querySelector('.cat-step[data-s="' + cur + '"]'), b = s && s.querySelector("[data-cnext]");
+    if (!b || b.dataset.busy) return;
+    if (cur === 1) b.disabled = !($("catName").value.trim() && $("catPhone").value.trim() && $("catConsent").checked);
+    else if (cur === 2) b.disabled = otpVal().length < 6;
+  }
+
+  /* ---------- Show a step + update the progress bar ---------- */
+  function go(n) {
+    cur = n;
+    qa("#catForm .cat-step").forEach(function (s) { s.classList.toggle("etlw-step-active", +s.getAttribute("data-s") === n); });
+    var q = seq(), i = q.indexOf(n);
+    $("catLabel").textContent = "Step " + (i + 1) + " of " + q.length;
+    $("catFill").style.width = ((i + 1) / q.length * 100) + "%";
+    if (n === 5) { // show only the sessions of the chosen part of the day
+      var p = val("c_period");
+      qa("#catSessions .etlw-option-card").forEach(function (c) {
+        var show = c.getAttribute("data-period") === p;
+        c.hidden = !show;
+        if (!show) c.querySelector("input").checked = false;
+      });
+    }
+    if (n === 2) {
+      var dg = $("catPhone").value.replace(/\D/g, "");
+      $("catOtpSub").textContent = "We sent a 6-digit code to +251 " + dg.charAt(0) + "** *** " + dg.slice(6, 9) + ".";
+    }
+    clr(); sync();
+  }
+
+  /* ---------- OTP (uses your existing OTPService, not modified) ---------- */
+  function fail(r) { if (!r || !r.ok) return true; var d = r.data; return !!(d && (d.reason || d.success === false || d.verified === false)); }
+  function count(s) {
+    clearInterval(timer);
+    var b = $("catResend"); b.disabled = true;
+    function paint() { b.textContent = "Resend in " + pad(Math.floor(s / 60)) + ":" + pad(s % 60); }
+    paint();
+    timer = setInterval(function () {
+      s--;
+      if (s <= 0) { clearInterval(timer); b.disabled = false; b.textContent = "Resend code"; return; }
+      paint();
+    }, 1000);
+  }
+  function sendOtp() {
+    return window.OTPService.sendOtp(phone()).then(function (r) {
+      if (fail(r)) { var x = new Error(window.OTPService.describeSendError(r)); x.wait = r && r.data && r.data.retryAfterSeconds; throw x; }
+    });
+  }
+  // Shows "loading" text on the button until the promise finishes
+  function busy(btn, text, p) {
+    var old = btn.textContent;
+    btn.dataset.busy = "1"; btn.textContent = text; btn.disabled = true;
+    return p.finally(function () { delete btn.dataset.busy; btn.textContent = old; btn.disabled = false; sync(); });
+  }
+
+  /* ---------- Data sent to n8n (same catering fields as the main Etalem page) ---------- */
+  function payload() {
+    var period = val("c_period");
+    return {
+      sourcePage: "cooking-service", service: "catering",
+      fullName: $("catName").value.trim(), phone: phone(),
+      serviceDate: $("catDate").value, sessionPeriod: period,
+      sessionType: [period === "Full Day" ? "Full Day" : val("c_session")],
+      numberOfPeople: Number($("catGuests").value),
+      cateringMenuSelection: vals("c_incl"), cuisineType: vals("c_type"),
+      employerBudget: Number($("catBudget").value),
+      taskDetails: $("catMenu").value.trim(),   // menu description (step 9)
+      notes: $("catNotes").value.trim(),        // final notes (step 14)
+      location: $("catLoc").value.trim(), landmark: $("catLandmark").value.trim(),
+      marketingChannel: val("c_channel"), preferredCommunicationChannel: val("c_comm")
+    };
+  }
+
+  /* ---------- Continue / Back ---------- */
+  function next(btn) {
+    var b = check(cur);
+    if (b) return err(b[0], b[1]);
+    if (cur === 1) { // send the code, then go to the OTP screen
+      busy(btn, "Sending verification code...", sendOtp().then(function () { clearOtp(); count(60); go(2); })
+        .catch(function (x) { err(x.message, $("catPhone")); if (x.wait) count(x.wait); }));
+    } else if (cur === 2) { // verify the code
+      busy(btn, "Verifying...", window.OTPService.verifyOtp(phone(), otpVal()).then(function (r) {
+        if (fail(r)) {
+          err(window.OTPService.describeVerifyError(r), $("catOtpRow")); clearOtp(); otpIn[0].focus();
+          if (r && r.data && r.data.reason === "locked_out" && r.data.retryAfterSeconds) count(r.data.retryAfterSeconds);
+          return;
+        }
+        go(seq()[seq().indexOf(2) + 1]);
+      }).catch(function () { err("Something went wrong verifying the code. Please try again.", $("catOtpRow")); }));
+    } else if (cur === 14) { // submit
+      busy(btn, "Sending...", fetch(WEBHOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload()) })
+        .then(function (r) { if (!r.ok) throw 0; $("catWrap").style.display = "none"; $("catDone").style.display = "block"; })
+        .catch(function () { err("Sorry, we could not submit your request. Please try again or call 9675.", btn.parentNode); }));
+    } else {
+      go(seq()[seq().indexOf(cur) + 1]);
+    }
+  }
+  function back() { var q = seq(), i = q.indexOf(cur); if (i > 0) go(q[i - 1]); }
+
+  overlay.addEventListener("click", function (e) {
+    if (e.target.closest("[data-cback]")) return back();
+    var n = e.target.closest("[data-cnext]"); if (n) return next(n);
+    if (e.target.closest(".etl-request-close")) close();
+  });
+  form.addEventListener("input", sync);
+  form.addEventListener("change", sync);
+  form.addEventListener("submit", function (e) { e.preventDefault(); });
+
+  /* ---------- OTP boxes: auto-advance, backspace, paste, resend ---------- */
+  otpIn.forEach(function (inp, i) {
+    inp.addEventListener("input", function () {
+      inp.value = inp.value.replace(/\D/g, "").slice(0, 1);
+      inp.classList.toggle("etl-otp-filled", !!inp.value);
+      if (inp.value && otpIn[i + 1]) otpIn[i + 1].focus();
+      sync();
+    });
+    inp.addEventListener("keydown", function (e) { if (e.key === "Backspace" && !inp.value && otpIn[i - 1]) otpIn[i - 1].focus(); });
+    inp.addEventListener("paste", function (e) {
+      var t = (e.clipboardData || window.clipboardData).getData("text").replace(/\D/g, "");
+      if (!t) return;
+      e.preventDefault();
+      t.split("").slice(0, 6).forEach(function (d, k) { otpIn[k].value = d; otpIn[k].classList.add("etl-otp-filled"); });
+      otpIn[Math.min(t.length, 6) - 1].focus(); sync();
+    });
+  });
+  $("catResend").addEventListener("click", function () {
+    clr();
+    sendOtp().then(function () { clearOtp(); count(60); otpIn[0].focus(); })
+      .catch(function (x) { err(x.message, $("catOtpRow")); if (x.wait) count(x.wait); });
+  });
+
+  /* ---------- Character counters ---------- */
+  [["catMenu", "catMenuN"], ["catNotes", "catNotesN"]].forEach(function (p) {
+    $(p[0]).addEventListener("input", function () { $(p[1]).textContent = $(p[0]).value.length + "/500 characters used"; });
+  });
+
+  /* ---------- Open / close the popup ---------- */
+  function open() {
+    form.reset();
+    $("catMenuN").textContent = $("catNotesN").textContent = "0/500 characters used";
+    $("catWrap").style.display = ""; $("catDone").style.display = "none";
+    var now = new Date(), max = new Date(); max.setDate(max.getDate() + 7);
+    var f = function (d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
+    $("catDate").min = f(now); $("catDate").max = f(max); // today up to +7 days
+    clearInterval(timer); clearOtp();
+    go(1);
+    savedY = window.scrollY || window.pageYOffset;
+    var s = document.body.style;
+    s.position = "fixed"; s.top = -savedY + "px"; s.left = "0"; s.right = "0"; s.width = "100%";
+    overlay.classList.add("etl-open");
+  }
+  function close() {
+    overlay.classList.remove("etl-open");
+    var s = document.body.style;
+    s.position = s.top = s.left = s.right = s.width = "";
+    var h = document.documentElement.style, prev = h.scrollBehavior;
+    h.scrollBehavior = "auto"; window.scrollTo(0, savedY); h.scrollBehavior = prev;
+  }
+  // The catering button: <a href="#catering" class="btn" data-catering>
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("[data-catering]")) { e.preventDefault(); open(); }
+  });
+})();
 </script>
