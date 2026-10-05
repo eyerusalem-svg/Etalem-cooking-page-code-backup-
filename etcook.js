@@ -129,7 +129,6 @@
 <!-- OTP SERVICE MODULE — thin client for the "GoodayOn - OTP Public Proxy"
      n8n workflow. Duplicated verbatim across pages since Webflow can't
      share code between pages. Do not touch the OTP backend workflows. -->
-<script>
   (function () {
     "use strict";
 
@@ -220,8 +219,7 @@
       describeSendError: describeSendError,
       describeVerifyError: describeVerifyError,
     };
-  })();
-</script>
+  }
 
 <!-- WIZARD ENGINE — cooking-only request wizard. Kept out of body.html to
      stay under Webflow's ~50,000 character per-slot limit. -->
@@ -243,6 +241,13 @@
     if (taskInput && charCount) {
       taskInput.addEventListener("input", function () {
         charCount.textContent = taskInput.value.length + "/" + maxChars + " characters used";
+      });
+    }
+    var prefInput = document.getElementById("etlPreferences");
+    var prefCount = document.getElementById("etlPreferencesCount");
+    if (prefInput && prefCount) {
+      prefInput.addEventListener("input", function () {
+        prefCount.textContent = prefInput.value.length + "/500 characters used";
       });
     }
 
@@ -1003,6 +1008,8 @@
         ok = !!(document.getElementById("etlName").value.trim() && document.getElementById("etlPhone").value.trim() && consentBox && consentBox.checked);
       } else if (step === 11) {
         ok = getOtpValue().length === 6;
+            } else if (step === 4) {
+        ok = !!document.getElementById("etlPreferences").value.trim();
       } else if (step === 5) {
         ok = radioGroupChecked("weeklyFrequency");
       } else if (step === 6) {
@@ -1111,7 +1118,7 @@
         preferredCommunicationChannel: checkedValue("preferredCommunicationChannel"),
         taskDetails: document.getElementById("etlTask").value.trim(),
         numberOfPeople: people === "" ? undefined : Number(people),
-        cuisinePreference: checkedValues("cuisinePreference"),
+       preferences: document.getElementById("etlPreferences").value.trim(),
       };
       return payload;
     }
@@ -1152,8 +1159,6 @@
       if (currentStep !== 10) return;
       submitRequest();
     });
-   </script>
-
     renderStep();
   })();
 </script>
