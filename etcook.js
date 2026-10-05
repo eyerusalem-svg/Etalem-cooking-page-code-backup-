@@ -700,9 +700,9 @@
       });
     }
 
-    // Cooking-only: no service-pick or transition step, so the sequence
-    // skips straight from OTP (11) to cooking details (4).
-    var SEQUENCE = [1, 11, 4, 5, 6, 7, 8, 9, 10];
+         // 1 Contact | 11 OTP (shown 2nd) | 3 Cooking details | 4 Dishes | 5 Frequency
+      // 6 Time/date | 7 Location | 8 Channel | 9 Reach | 10 Notes + submit
+   var SEQUENCE = [1, 11, 3, 4, 5, 6, 7, 8, 9, 10];
 
     var currentStep = 1;
     var stepEls = {};
@@ -912,13 +912,21 @@
         }
         return true;
       }
-      if (step === 4) {
+      if (step === 3) {
         if (!document.getElementById("etlNumberOfPeople").value) {
           showFormError("Let us know how many people you usually cook for.", document.getElementById("etlNumberOfPeople"));
           return false;
         }
         if (!checkboxGroupChecked("cuisinePreference")) {
           showFormError("Please select at least one cuisine preference.", document.getElementById("etlCuisineGroup"));
+          return false;
+        }
+        return true;
+      }
+     if (step === 4) {
+        var pref = document.getElementById("etlPreferences");
+        if (!pref.value.trim()) {
+          showFormError("Please tell us your favorite dishes so we can match you with the right Etalem.", pref);
           return false;
         }
         return true;
@@ -1144,6 +1152,7 @@
       if (currentStep !== 10) return;
       submitRequest();
     });
+   </script>
 
     renderStep();
   })();
