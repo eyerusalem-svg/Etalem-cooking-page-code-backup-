@@ -69,7 +69,7 @@
       <span class="eyebrow">Home Cooking Service</span>
       <h1><em>Etalem</em> Cooking</h1>
       <p class="lede">There’s always something to do at home-from planning meals and preparing ingredients to cooking and cleaning up. Etalem Cooking provides professional cooking support in your home, taking care of the cooking based on your household’s needs so you can spend more time on the things that matter to you.</p>
-      <a href="#packages" class="btn">Explore Etalem</a>
+      <a href="#packages" class="btn">Book a Service</a>
     </div>
     <div class="hero-photo">
       <div class="hero-photo-frame">
@@ -532,7 +532,7 @@
           </button>
         </div>
 
-        <!-- STEP 4 — Cooking details -->
+        <!-- STEP 3 — Cooking details -->
         <div class="etlw-step" data-step="4">
           <h3>Tell us about your cooking needs.</h3>
 
@@ -588,6 +588,26 @@
             </div>
           </div>
 
+          <button type="button" class="etlw-continue" data-next>
+            Continue
+          </button>
+        </div>
+       <!-- STEP 4 — Customer preference: favorite dishes -->
+        <div class="etlw-step" data-step="4">
+          <!-- Title -->
+          <h3>What are 3–5 dishes you'd love your Etalem cook to be great at?</h3>
+          <!-- Paragraph (example line shown under the title) -->
+          <p class="etlw-subtitle">e.g. Doro Wat, Shiro, Pasta with Red Sauce, Pancakes, Grilled Chicken</p>
+          <div class="etl-form-group">
+            <textarea
+              id="etlPreferences"
+              name="preferences"
+              maxlength="500"
+              placeholder="Type your favorite dishes here..."
+              aria-label="Favorite dishes"
+            ></textarea>
+            <span class="etl-char-count" id="etlPreferencesCount">0/500 characters used</span>
+          </div>
           <button type="button" class="etlw-continue" data-next>
             Continue
           </button>
