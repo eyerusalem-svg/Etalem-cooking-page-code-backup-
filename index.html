@@ -245,8 +245,8 @@
             <p class="cc-desc-v2">We take care of the groceries, cooking, and serving.</p>
           </div>
         </div>
-          <!-- No package data-* attrs: catering is quoted per-event. -->
-          <a href="#request" class="btn">Request Etalem</a>
+           <!-- Catering button: opens the separate catering popup, not the cooking form -->
+          <a href="#catering" class="btn" data-catering>Request Etalem</a>
         </div>
       </div>
     </div>
@@ -405,7 +405,7 @@
           </svg>
         </button>
         <div class="etlw-progress-label" id="etlProgressLabel">
-          Step 1 of 9
+         Step 1 of 10
         </div>
       </div>
       <div class="etlw-progress-track">
@@ -469,7 +469,7 @@
                 id="etlPrivacyConsent"
                 name="privacyConsent"
                 required
-              />
+              /> 
               <span class="etlw-consent-box" aria-hidden="true"
                 ><svg
                   viewBox="0 0 24 24"
@@ -502,7 +502,7 @@
           </p>
         </div>
 
-        <!-- STEP  OTP — Verification -->
+        <!-- STEP 2 (data-step 11) — OTP Verification -->
         <div class="etlw-step" data-step="11">
           <h3>Verify it's you.</h3>
           <p class="etlw-subtitle" id="etlOtpSubtitle">
