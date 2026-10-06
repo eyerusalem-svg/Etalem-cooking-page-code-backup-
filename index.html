@@ -994,8 +994,234 @@
         >
           <circle cx="12" cy="12" r="9" />
           <polyline points="12 7 12 12 15.5 14" /></svg
-        >Expect to hear from us within the next 2 business hours</span
+               >Expect to hear from us within the next 2 business hours</span
       >
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CATERING POPUP (14 steps) ===================== -->
+<div class="etl-request-overlay" id="cateringRequest" role="dialog" aria-modal="true" aria-label="Request catering">
+  <div class="etl-request-card">
+    <button type="button" class="etl-request-close" aria-label="Close request form">&times;</button>
+
+    <div id="catWrap">
+      <div class="etlw-progress-row"><div class="etlw-progress-label" id="catLabel">Step 1 of 14</div></div>
+      <div class="etlw-progress-track"><div class="etlw-progress-fill" id="catFill"></div></div>
+
+      <form id="catForm" novalidate>
+
+        <!-- STEP 1: Contact -->
+        <div class="cat-step etlw-step-active" data-s="1">
+          <h3>Let's plan your catering.</h3>
+          <p class="etlw-subtitle">Tell us how to reach you.</p>
+          <div class="etl-form-group">
+            <label for="catName">Full name</label>
+            <input type="text" id="catName" placeholder="e.g. Hana Tesfaye" autocomplete="name" />
+          </div>
+          <div class="etl-form-group">
+            <label for="catPhone">Phone number</label>
+            <div class="etlw-phone-row">
+              <span class="etlw-phone-prefix">+251</span>
+              <input type="tel" id="catPhone" placeholder="9XX XXX XXX or 7XX XXX XXX" inputmode="numeric" autocomplete="tel" />
+            </div>
+          </div>
+          <div class="etlw-consent-row">
+            <label class="etlw-consent-check">
+              <input type="checkbox" id="catConsent" />
+              <span class="etlw-consent-box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>
+              <span class="etlw-consent-text">I agree to GoodayOn verifying and storing my phone number as described in the <a href="https://gooday.io/gooday-privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>.</span>
+            </label>
+          </div>
+          <button type="button" class="etlw-continue" data-cnext disabled>Get Started</button>
+          <p class="etlw-footer-note">Your information stays private and is only used to handle your catering request.</p>
+        </div>
+
+        <!-- STEP 2: OTP verification -->
+        <div class="cat-step" data-s="2">
+          <h3>Verify it's you.</h3>
+          <p class="etlw-subtitle" id="catOtpSub">We sent a 6-digit code to your phone.</p>
+          <div class="etlw-otp-row" id="catOtpRow">
+            <input type="text" inputmode="numeric" maxlength="1" class="cat-otp" autocomplete="one-time-code" />
+            <input type="text" inputmode="numeric" maxlength="1" class="cat-otp" />
+            <input type="text" inputmode="numeric" maxlength="1" class="cat-otp" />
+            <input type="text" inputmode="numeric" maxlength="1" class="cat-otp" />
+            <input type="text" inputmode="numeric" maxlength="1" class="cat-otp" />
+            <input type="text" inputmode="numeric" maxlength="1" class="cat-otp" />
+          </div>
+          <div class="etlw-otp-resend">Didn't get a code? <button type="button" class="etlw-otp-resend-btn" id="catResend" disabled>Resend in 01:00</button></div>
+          <button type="button" class="etlw-continue" data-cnext disabled>Verify &amp; Continue</button>
+        </div>
+
+        <!-- STEP 3: Event date -->
+        <div class="cat-step" data-s="3">
+          <h3>When do you need the catering?</h3>
+          <p class="etlw-subtitle">Please note we currently support requests up to 7 days out.</p>
+          <div class="etl-form-group">
+            <label for="catDate">Event date</label>
+            <input type="date" id="catDate" />
+          </div>
+          <div class="etlw-note"><span>Need more than one day? Add the other dates in the notes at the end.</span></div>
+          <button type="button" class="etlw-continue" data-cnext>Continue</button>
+        </div>
+
+        <!-- STEP 4: Part of the day -->
+        <div class="cat-step" data-s="4">
+          <h3>Which part of the day do you need?</h3>
+          <p class="etlw-subtitle">Choose the suitable time for your catering service.</p>
+          <div class="etlw-option-list" id="catPeriodList">
+            <label class="etlw-option-card"><input type="radio" name="c_period" value="Full Day" /><b>Full Day</b><span>7:00 AM – 5:00 PM</span></label>
+            <label class="etlw-option-card"><input type="radio" name="c_period" value="Morning" /><b>Morning</b><span>7:00 AM – 1:00 PM</span></label>
+            <label class="etlw-option-card"><input type="radio" name="c_period" value="Afternoon" /><b>Afternoon</b><span>11:00 AM – 5:00 PM</span></label>
+            <label class="etlw-option-card"><input type="radio" name="c_period" value="Evening" /><b>Evening</b><span>4:00 PM – midnight</span></label>
+          </div>
+          <button type="button" class="etlw-continue" data-cnext>Continue</button>
+        </div>
+
+        <!-- STEP 5: Session (skipped for Full Day) -->
+        <div class="cat-step" data-s="5">
+          <h3>Which session do you need?</h3>
+          <p class="etlw-subtitle">Choose the session that suits your catering service best.</p>
+          <div class="etlw-option-list" id="catSessions">
+            <label class="etlw-option-card" data-period="Morning"><input type="radio" name="c_session" value="Breakfast" /><b>Breakfast</b><span>7:00 – 10:00 AM</span></label>
+            <label class="etlw-option-card" data-period="Morning"><input type="radio" name="c_session" value="Tea Break" /><b>Tea Break</b><span>9:00 – 11:00 AM</span></label>
+            <label class="etlw-option-card" data-period="Morning"><input type="radio" name="c_session" value="Brunch" /><b>Brunch</b><span>10:00 AM – 1:00 PM</span></label>
+            <label class="etlw-option-card" data-period="Afternoon"><input type="radio" name="c_session" value="Lunch" /><b>Lunch</b><span>11:00 AM – 3:00 PM</span></label>
+            <label class="etlw-option-card" data-period="Afternoon"><input type="radio" name="c_session" value="Afternoon Tea" /><b>Afternoon Tea</b><span>3:00 – 5:00 PM</span></label>
+            <label class="etlw-option-card" data-period="Evening"><input type="radio" name="c_session" value="Early Cocktail" /><b>Early Cocktail</b><span>4:00 – 7:00 PM</span></label>
+            <label class="etlw-option-card" data-period="Evening"><input type="radio" name="c_session" value="Dinner" /><b>Dinner</b><span>6:00 – 9:00 PM</span></label>
+            <label class="etlw-option-card" data-period="Evening"><input type="radio" name="c_session" value="Evening Reception" /><b>Evening Reception</b><span>6:00 – 10:00 PM</span></label>
+            <label class="etlw-option-card" data-period="Evening"><input type="radio" name="c_session" value="Late Night" /><b>Late Night</b><span>9:00 PM – midnight</span></label>
+          </div>
+          <button type="button" class="etlw-continue" data-cnext>Continue</button>
+        </div>
+
+        <!-- STEP 6: Number of guests -->
+        <div class="cat-step" data-s="6">
+          <h3>How many people are you catering for?</h3>
+          <p class="etlw-subtitle">If the number differs by session, tell us in the notes at the end.</p>
+          <div class="etl-form-group">
+            <div class="etlw-stepper">
+              <button type="button" class="etlw-stepper-btn" data-step-target="catGuests" data-step-dir="-1">&minus;</button>
+              <input type="number" id="catGuests" min="1" value="10" inputmode="numeric" />
+              <button type="button" class="etlw-stepper-btn" data-step-target="catGuests" data-step-dir="1">+</button>
+            </div>
+          </div>
+          <button type="button" class="etlw-continue" data-cnext>Continue</button>
+        </div>
+
+        <!-- STEP 7: What is included -->
+        <div class="cat-step" data-s="7">
+          <h3>What would you like included?</h3>
+          <p class="etlw-subtitle">Select all that apply.</p>
+          <div class="etl-checkbox-group" id="catIncl">
+            <label class="etl-checkbox-option"><input type="checkbox" name="c_incl" value="Cocktail/Finger Foods" /> Cocktail/Finger Foods</label>
+            <label class="etl-checkbox-option"><input type="checkbox" name="c_incl" value="Full-Course Meal" /> Full-Course Meal</label>
+            <label class="etl-checkbox-option"><input type="checkbox" name="c_incl" value="Water" /> Water</label>
+            <label class="etl-checkbox-option"><input type="checkbox" name="c_incl" value="Tea &amp; Coffee" /> Tea &amp; Coffee</label>
+            <label class="etl-checkbox-option"><input type="checkbox" name="c_incl" value="Soft Drinks" /> Soft Drinks</label>
+            <label class="etl-checkbox-option"><input type="checkbox" name="c_incl" value="Fruits" /> Fruits</label>
+            <label class="etl-checkbox-option"><input type="checkbox" name="c_incl" value="Cakes" /> Cakes</label>
+          </div>
+          <button type="button" class="etlw-continue" data-cnext>Continue</button>
+        </div>
+
+        <!-- STEP 8: Menu type -->
+        <div class="cat-step" data-s="8">
+          <h3>What type of menu are you looking for?</h3>
+          <p class="etlw-subtitle">Select all that apply.</p>
+          <div class="etl-checkbox-group" id="catType">
+            <label class="etl-checkbox-option"><input type="checkbox" name="c_type" value="Western" /> Western</label>
+            <label class="etl-checkbox-option"><input type="checkbox" name="c_type" value="Local" /> Local</label>
+            <label class="etl-checkbox-option"><input type="checkbox" name="c_type" value="Vegan" /> Vegan</label>
+            <label class="etl-checkbox-option"><input type="checkbox" name="c_type" value="Non-Fasting" /> Non-Fasting</label>
+          </div>
+          <button type="button" class="etlw-continue" data-cnext>Continue</button>
+        </div>
+
+        <!-- STEP 9: Menu details -->
+        <div class="cat-step" data-s="9">
+          <h3>Tell us more about what you'd like on the menu.</h3>
+          <p class="etlw-subtitle">Specific dishes, cuisines, dietary needs, anything you have in mind.</p>
+          <div class="etl-form-group">
+            <textarea id="catMenu" maxlength="500" placeholder="e.g. Kitfo, Biryani, vegan options for 3 guests, no shellfish"></textarea>
+            <span class="etl-char-count" id="catMenuN">0/500 characters used</span>
+          </div>
+          <button type="button" class="etlw-continue" data-cnext>Continue</button>
+        </div>
+
+        <!-- STEP 10: Budget per plate -->
+        <div class="cat-step" data-s="10">
+          <h3>What's your budget per person (per plate) in ETB?</h3>
+          <div class="etl-form-group">
+            <div class="etlw-phone-row">
+              <span class="etlw-phone-prefix">ETB</span>
+              <input type="number" id="catBudget" min="1" inputmode="numeric" placeholder="e.g. 600" />
+            </div>
+          </div>
+          <button type="button" class="etlw-continue" data-cnext>Continue</button>
+        </div>
+
+        <!-- STEP 11: Location -->
+        <div class="cat-step" data-s="11">
+          <h3>Where is the event?</h3>
+          <div class="etl-form-group">
+            <label for="catLoc">Area / address</label>
+            <input type="text" id="catLoc" placeholder="e.g. Bole, Sarbet, CMC..." />
+          </div>
+          <div class="etl-form-group">
+            <label for="catLandmark">Nearest known landmark</label>
+            <input type="text" id="catLandmark" placeholder="e.g. near Friendship Building..." />
+          </div>
+          <div class="etlw-note"><span>This helps us plan delivery and setup. Your exact address is shared only with the team handling your order.</span></div>
+          <button type="button" class="etlw-continue" data-cnext>Continue</button>
+        </div>
+
+        <!-- STEP 12: How you found Etalem -->
+        <div class="cat-step" data-s="12">
+          <h3>How did you find Etalem?</h3>
+          <div class="etlw-option-list" id="catChannelList">
+            <label class="etlw-option-card"><input type="radio" name="c_channel" value="Friends/Family" /><b>Friends/Family</b></label>
+            <label class="etlw-option-card"><input type="radio" name="c_channel" value="Instagram" /><b>Instagram</b></label>
+            <label class="etlw-option-card"><input type="radio" name="c_channel" value="Tiktok" /><b>Tiktok</b></label>
+            <label class="etlw-option-card"><input type="radio" name="c_channel" value="LinkedIn" /><b>LinkedIn</b></label>
+            <label class="etlw-option-card"><input type="radio" name="c_channel" value="Previous Customer" /><b>Previous Customer</b></label>
+          </div>
+          <button type="button" class="etlw-continue" data-cnext>Continue</button>
+        </div>
+
+        <!-- STEP 13: How to reach you -->
+        <div class="cat-step" data-s="13">
+          <h3>How would you like us to reach you?</h3>
+          <div class="etlw-option-list" id="catCommList">
+            <label class="etlw-option-card"><input type="radio" name="c_comm" value="WhatsApp" /><b>WhatsApp</b></label>
+            <label class="etlw-option-card"><input type="radio" name="c_comm" value="SMS" /><b>SMS</b></label>
+            <label class="etlw-option-card"><input type="radio" name="c_comm" value="Call" /><b>Call</b></label>
+          </div>
+          <button type="button" class="etlw-continue" data-cnext>Continue</button>
+        </div>
+
+        <!-- STEP 14: Notes + submit -->
+        <div class="cat-step" data-s="14">
+          <h3>Anything else you'd like us to know?</h3>
+          <div class="etl-form-group">
+            <label for="catNotes">Additional notes <span class="etlw-optional-tag">Optional</span></label>
+            <textarea id="catNotes" maxlength="500" placeholder="Venue access, serving equipment, allergies, dates for a multi-day event, or any special requests..."></textarea>
+            <span class="etl-char-count" id="catNotesN">0/500 characters used</span>
+          </div>
+          <button type="button" class="etlw-continue" data-cnext>Get Your Etalem</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- CLOSING SCREEN: same as the cooking form -->
+    <div id="catDone" class="etlw-confirm" style="display: none">
+      <div class="etlw-confirm-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#e21e81" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z" /><path d="M4 7l8 6 8-6" /></svg>
+      </div>
+      <h3>You're all set!</h3>
+      <p>Our team is putting together your personalized quote and will send it to you shortly.</p>
+      <span class="etlw-confirm-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 15.5 14" /></svg>Expect to hear from us within the next 2 business hours</span>
     </div>
   </div>
 </div>
