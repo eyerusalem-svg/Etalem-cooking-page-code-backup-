@@ -1,4 +1,3 @@
-/* WIZARD ENGINE: cooking-only request wizard */
 <script>
 (function () {
   "use strict";
@@ -217,10 +216,7 @@
       describeVerifyError: describeVerifyError,
     };
     })();
-
-<!-- WIZARD ENGINE — cooking-only request wizard. Kept out of body.html to
-     stay under Webflow's ~50,000 character per-slot limit. -->
-<script>
+/* WIZARD ENGINE: cooking-only request wizard */
   (function () {
     var WEBHOOK_URL = "https://goodayon.app.n8n.cloud/webhook/etalem-service-request";
     var overlay = document.getElementById("request");
@@ -1168,6 +1164,8 @@
   var qa = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
   var pad = function (n) { return (n < 10 ? "0" : "") + n; };
   var overlay = $("cateringRequest"), form = $("catForm");
+  // Keep the popup directly under <body> so nothing can clip or offset it
+  if (overlay.parentNode !== document.body) document.body.appendChild(overlay);
   var otpIn = qa("#catOtpRow .cat-otp");
   var cur = 1, timer = null, savedY = 0;
 
